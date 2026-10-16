@@ -4,6 +4,7 @@ requires = [
     "setuptools_scm[toml]>=3.4.1",
     "wheel",
     "scikit-build",
+    "scikit-build-core",
     "cmake",
     "ninja",
     "numpy",
@@ -14,10 +15,14 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 
 [tool.cibuildwheel]
-archs = ["native"]
-skip = "{cp,pp}27-* {cp,pp}35-* pp*"
+# archs = ["native"]
+# skip = "{cp,pp}27-* {cp,pp}35-* pp*"
+build = "cp314-android_*"
+skip = ""
 
 build-frontend = "build"
+before-build = "rm -rf _skbuild"
+test-skip = "*-android_*"
 
 test-command = "pytest {package}/tests -v"
 before-test = ""
@@ -26,8 +31,21 @@ test-extras = []
 
 manylinux-x86_64-image = "manylinux2014"
 
+[tool.cibuildwheel.environment]
+OpenCV_DIR = "/Users/ajc212/Desktop/Tmp/OpenCV-android-sdk/sdk/native/jni"
+ANDROID_NDK_ABI_NAME = "arm64-v8a"
+ANDROID_ABI = "arm64-v8a"
+SKBUILD_CMAKE_ARGS = "-DCYTHON_VERSION=3.0.11 -DOpenCV_DIR=/Users/ajc212/Desktop/Tmp/OpenCV-android-sdk/sdk/native/jni -DANDROID_NDK_ABI_NAME=arm64-v8a -DANDROID_ABI=arm64-v8a"
+
+[tool.cibuildwheel.xbuild-files]
+numpy = []
+
+[tool.cibuildwheel.android]
+archs = ["arm64_v8a"]
+
 [tool.cibuildwheel.macos]
-before-all = ["brew install eigen opencv"]
+before-all = ["brew install eigen opencv@4"]
+environment = { CMAKE_PREFIX_PATH = "$(brew --prefix opencv@4)", MACOSX_DEPLOYMENT_TARGET = "27.0" }
 
 [tool.cibuildwheel.linux]
 before-all = ["yum install -y eigen3-devel", "bash scripts/manylinux-before-all.sh"]
